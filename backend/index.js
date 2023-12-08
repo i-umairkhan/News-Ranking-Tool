@@ -1,6 +1,7 @@
 import express from "express"
 import morgan from "morgan"
 import bodyParser from "body-parser"
+import cors from "cors"
 import { spawn } from "child_process"
 
 
@@ -10,6 +11,7 @@ const app = express();
 
 // Middlewares
 app.use(morgan("tiny"));
+app.use(cors())
 app.use(bodyParser.json());
 
 
@@ -20,11 +22,12 @@ app.get("/", (req, res) => {
 
 app.post("/query", (req, res) => {
     const { data } = req.body;
+    console.log(data)
 
     const filePath = "main.py"
     const pythonProcess = spawn("python",[filePath,data]);
     pythonProcess.stdout.on('data', (data) => {
-        res.json(data.toString())
+        res.send(data.toString())
     })
     pythonProcess.stderr.on('data', (data) => {
         console.log(data.toString());
