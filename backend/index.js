@@ -1,7 +1,7 @@
-import { spawn } from "child_process"
 import express from "express"
 import morgan from "morgan"
 import bodyParser from "body-parser"
+import { spawn } from "child_process"
 
 
 const PORT = 3000;
@@ -21,14 +21,13 @@ app.get("/", (req, res) => {
 app.post("/query", (req, res) => {
     const { data } = req.body;
 
-    const filePath = "/workspaces/News-Ranking-Tool/backend/main.py"
+    const filePath = "main.py"
     const pythonProcess = spawn("python",[filePath,data]);
     pythonProcess.stdout.on('data', (data) => {
-        process.stdout.write(data);
-        console.log(data,"")
+        res.json(data.toString())
     })
     pythonProcess.stderr.on('data', (data) => {
-        console.log(data);
+        console.log(data.toString());
     })
     pythonProcess.on('close', (code) => {
         if (code !== 0) {
@@ -37,8 +36,6 @@ app.post("/query", (req, res) => {
             console.log(code);
         }
     })
-
-    res.send(data);
 })
 
 // Server
