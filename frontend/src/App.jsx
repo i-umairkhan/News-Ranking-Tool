@@ -1,13 +1,33 @@
 import "./App.css";
 import { useState } from "react";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
+import {
+  Card,
+  CardContent,
+  Collapse,
+  TextField,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 
 function App() {
-  const [query, setQuery] = useState("");
-  const [news, setNews] = useState([]);
+  // states
 
+  const [query, setQuery] = useState(""); // input feild query
+  const [news, setNews] = useState([]); // fetched results news
+  const [expanded, setExpanded] = useState(false); // show/hide discription button
+  const [progressAnimation, setProgressAnimation] = useState(false); // progressAnimation state
+
+  // handlers
+
+  // show/hide discription button
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
+
+  // get data from backend
   const getData = () => {
+    setProgressAnimation(true);
+    setNews([]);
     fetch("http://localhost:3000/query", {
       method: "POST",
       headers: {
@@ -18,12 +38,17 @@ function App() {
       }),
     })
       .then((response) => response.json())
-      .then((json) => setNews(json));
+      .then((json) => {
+        setNews(json);
+        setProgressAnimation(false);
+      });
   };
+
   return (
     <>
       <h1>News Ranking Tool</h1>
       <h3>This tool is trained on DAWN News dataset.</h3>
+      {/* Input Feild for query */}
       <TextField
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -33,6 +58,7 @@ function App() {
           marginRight: "20px",
         }}
       />
+      {/* Search Query */}
       <Button
         variant="contained"
         onClick={getData}
@@ -44,8 +70,45 @@ function App() {
       >
         Search
       </Button>
+      {/* Show/Hide discription button */}
+      {news.length > 0 ? (
+        <Button
+          onClick={handleExpandClick}
+          sx={{
+            marginTop: "20px",
+            marginRight: "20px",
+            padding: "15px",
+          }}
+          variant="outlined"
+        >
+          {expanded ? "Hide Discription" : "Show Discriptions"}
+        </Button>
+      ) : null}
+      {/* Animation Progress */}
+      {progressAnimation ? (
+        <CircularProgress sx={{ display: "block", margin: "auto" }} />
+      ) : null}
+      {/* News Cards */}
       {news.map((a) => (
-        <h3>{a.headline}</h3>
+        <Card
+          sx={{
+            minWidth: "275px",
+            marginY: "20px",
+            padding: "10px",
+            backgroundColor: "#F8F8F8",
+          }}
+        >
+          <CardContent>
+            <p style={{ fontSize: "20px", fontWeight: "bold" }}>{a.headline}</p>
+            <br></br>
+            <p style={{ fontSize: "15px" }}>Relevance Score: {a.score}</p>{" "}
+            <Collapse in={expanded} timeout="auto" unmountOnExit>
+              <p style={{ paddingTop: "10px", textAlign: "justify" }}>
+                {a.short_description}
+              </p>
+            </Collapse>
+          </CardContent>
+        </Card>
       ))}
     </>
   );
